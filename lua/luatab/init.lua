@@ -8,24 +8,20 @@ M.title = function(bufnr)
     if buftype == 'help' then
         return 'help:' .. vim.fn.fnamemodify(file, ':t:r')
     elseif buftype == 'quickfix' then
-        return 'quickfix'
+        return nil
     elseif filetype == 'TelescopePrompt' then
-        return 'Telescope'
+        return nil
     elseif filetype == 'git' then
-        return 'Git'
+        return nil
     elseif filetype == 'fugitive' then
-        return 'Fugitive'
-    elseif filetype == 'NvimTree' then
-        return 'NvimTree'
-    elseif filetype == 'oil' then
-        return 'Oil'
+        return nil
     elseif file:sub(file:len()-2, file:len()) == 'FZF' then
-        return 'FZF'
+        return nil
     elseif buftype == 'terminal' then
         local _, mtch = string.match(file, "term:(.*):(%a+)")
         return mtch ~= nil and mtch or vim.fn.fnamemodify(vim.env.SHELL, ':t')
     elseif file == '' then
-        return '[No Name]'
+        return nil
     else
         return vim.fn.pathshorten(vim.fn.fnamemodify(file, ':p:~:t'))
     end
@@ -40,33 +36,27 @@ M.windowCount = function(index)
     return nwins > 1 and '(' .. nwins .. ') ' or ''
 end
 
-M.devicon = function(bufnr, isSelected)
-    local icon, devhl
+M.devicon = function(bufnr)
+    local icon
     local file = vim.fn.fnamemodify(vim.fn.bufname(bufnr), ':t')
     local buftype = vim.fn.getbufvar(bufnr, '&buftype')
     local filetype = vim.fn.getbufvar(bufnr, '&filetype')
     local devicons = require'nvim-web-devicons'
     if filetype == 'TelescopePrompt' then
-        icon, devhl = devicons.get_icon('telescope')
+        icon = devicons.get_icon('telescope')
     elseif filetype == 'fugitive' then
-        icon, devhl = devicons.get_icon('git')
+        icon = devicons.get_icon('git')
     elseif filetype == 'vimwiki' then
-        icon, devhl = devicons.get_icon('markdown')
+        icon = devicons.get_icon('markdown')
     elseif buftype == 'terminal' then
-        icon, devhl = devicons.get_icon('zsh')
+        icon = devicons.get_icon('zsh')
     else
-        icon, devhl = devicons.get_icon(file, vim.fn.expand('#'..bufnr..':e'))
+        icon = devicons.get_icon(file, vim.fn.expand('#'..bufnr..':e'))
     end
     if icon then
-        local h = require'luatab.highlight'
-        local fg = h.extract_highlight_colors(devhl, 'fg')
-        local bg = h.extract_highlight_colors('TabLineSel', 'bg')
-        local hl = h.create_component_highlight_group({bg = bg, fg = fg}, devhl)
-        local selectedHlStart = (isSelected and hl) and '%#'..hl..'#' or ''
-        local selectedHlEnd = isSelected and '%#TabLineSel#' or ''
-        return selectedHlStart .. icon .. selectedHlEnd .. ' '
+      return icon .. ' '
     end
-    return ''
+    return ""
 end
 
 M.separator = function(index)
@@ -79,17 +69,21 @@ M.cell = function(index)
     local winnr = vim.fn.tabpagewinnr(index)
     local bufnr = buflist[winnr]
     local hl = (isSelected and '%#TabLineSel#' or '%#TabLine#')
+    local title = M.title(bufnr)
+
+    if not title then
+      return ""
+    end
 
     return hl .. '%' .. index .. 'T' .. ' ' ..
-        M.windowCount(index) ..
-        M.title(bufnr) .. ' ' ..
+        M.devicon(bufnr) ..
+        title .. ' ' ..
         M.modified(bufnr) ..
-        M.devicon(bufnr, isSelected) .. '%T' ..
         M.separator(index)
 end
 
 M.tabline = function()
-    local line = ''
+    local line = '%#TabLineFill#%='
     for i = 1, vim.fn.tabpagenr('$'), 1 do
         line = line .. M.cell(i)
     end
