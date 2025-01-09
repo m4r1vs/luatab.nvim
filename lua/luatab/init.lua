@@ -94,9 +94,6 @@ M.tabline = function()
         line = line .. M.cell(i)
     end
     line = line .. '%#TabLineFill#%='
-    if vim.fn.tabpagenr('$') > 1 then
-        line = line .. '%#TabLine#%999XX'
-    end
     return line
 end
 
