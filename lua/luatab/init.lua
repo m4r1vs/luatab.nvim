@@ -11,6 +11,8 @@ M.title = function(bufnr)
     return nil
   elseif filetype == "TelescopePrompt" then
     return nil
+  elseif filetype == "codecompanion" then
+    return "Langauge Model"
   elseif filetype == "git" then
     return nil
   elseif filetype == "fugitive" then
@@ -42,7 +44,9 @@ M.devicon = function(bufnr)
   local buftype = vim.fn.getbufvar(bufnr, "&buftype")
   local filetype = vim.fn.getbufvar(bufnr, "&filetype")
   local devicons = require "nvim-web-devicons"
-  if filetype == "TelescopePrompt" then
+  if filetype == "codecompanion" then
+    icon = "󰅏"
+  elseif filetype == "TelescopePrompt" then
     icon = devicons.get_icon("telescope")
   elseif filetype == "fugitive" then
     icon = devicons.get_icon("git")
